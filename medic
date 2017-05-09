@@ -5,9 +5,13 @@ import subprocess
 import sys
 
 USAGE = """\
-Set the environment variables:
-BOSH_ENVIRONMENT
-usage: medic scalablesyslog\
+Required environment variables:
+\tBOSH_ENVIRONMENT
+Usage:
+\tmedic <deployment_name>
+For Example,
+\tmedic scalablesyslog
+\
 """
 
 loggregator_vm_types=["doppler", "traffic", "log-api", "reverse_log_proxy"]
