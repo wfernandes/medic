@@ -1,0 +1,82 @@
+#!/usr/bin/env python
+
+import os
+import subprocess
+import sys
+
+USAGE = """\
+Set the environment variables:
+BOSH_ENVIRONMENT
+BOSH_DEPLOYMENT
+usage: medic loggregator\
+"""
+
+loggregator_vm_types=["doppler", "traffic", "log-api"]
+scalable_syslog_vm_types=["adapter", "scheduler"]
+
+def run_command(vm):
+    bosh_cmd = subprocess.Popen([
+        "bosh",
+        "-e", os.environ['BOSH_ENVIRONMENT'],
+        "-d", os.environ['BOSH_DEPLOYMENT'],
+        "ssh", vm,
+        "-c", "curl localhost:8080/health; echo"
+        ], stdout=subprocess.PIPE, stderr=sys.stderr)
+
+    bosh_cmd.wait()
+    grep_cmd = subprocess.Popen([
+        "grep",
+        "stdout",
+        ], stdin=bosh_cmd.stdout, stdout=subprocess.PIPE, stderr=sys.stderr)
+
+    grep_cmd.wait()
+    awk_cmd = subprocess.Popen([
+        "awk",
+        "{print $4}",
+        ], stdin=grep_cmd.stdout, stdout=subprocess.PIPE)
+
+    awk_cmd.wait()
+    for x in awk_cmd.stdout:
+        print "{} | {}".format(vm, x.strip())
+
+
+def get_vms(deployment):
+    bosh_cmd = subprocess.Popen([
+        "bosh",
+        "-e", os.environ['BOSH_ENVIRONMENT'],
+        "-d", os.environ['BOSH_DEPLOYMENT'],
+        "vms"
+        ], stdout=subprocess.PIPE, stderr=sys.stderr)
+
+    bosh_vms = subprocess.Popen((
+        "awk",
+        '{print $1}',
+    ), stdin=bosh_cmd.stdout, stdout=subprocess.PIPE)
+
+    bosh_vms.wait()
+    vms=[]
+    if deployment == "loggregator":
+        vm_types=loggregator_vm_types
+    elif deployment == "scalablesyslog":
+        vm_types=scalable_syslog_vm_types
+
+    for vm in bosh_vms.stdout:
+        if any(vm_type in vm for vm_type in vm_types):
+            vms.append(vm.strip())
+    return vms
+
+def main():
+    deployment = parse_args()
+    vms = get_vms(deployment)
+    for vm in vms:
+        run_command(vm)
+
+def parse_args():
+    if len(sys.argv) != 2:
+        print USAGE
+        sys.exit(1)
+    deployment = sys.argv[1]
+    return deployment
+
+if __name__ == "__main__":
+    main()
