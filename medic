@@ -10,7 +10,7 @@ BOSH_ENVIRONMENT
 usage: medic scalablesyslog\
 """
 
-loggregator_vm_types=["doppler", "traffic", "log-api"]
+loggregator_vm_types=["doppler", "traffic", "log-api", "reverse_log_proxy"]
 scalable_syslog_vm_types=["adapter", "scheduler"]
 
 def run_command(deployment, vm):
