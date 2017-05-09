@@ -7,18 +7,17 @@ import sys
 USAGE = """\
 Set the environment variables:
 BOSH_ENVIRONMENT
-BOSH_DEPLOYMENT
-usage: medic loggregator\
+usage: medic scalablesyslog\
 """
 
 loggregator_vm_types=["doppler", "traffic", "log-api"]
 scalable_syslog_vm_types=["adapter", "scheduler"]
 
-def run_command(vm):
+def run_command(deployment, vm):
     bosh_cmd = subprocess.Popen([
         "bosh",
         "-e", os.environ['BOSH_ENVIRONMENT'],
-        "-d", os.environ['BOSH_DEPLOYMENT'],
+        "-d", deployment,
         "ssh", vm,
         "-c", "curl localhost:8080/health; echo"
         ], stdout=subprocess.PIPE, stderr=sys.stderr)
@@ -44,7 +43,7 @@ def get_vms(deployment):
     bosh_cmd = subprocess.Popen([
         "bosh",
         "-e", os.environ['BOSH_ENVIRONMENT'],
-        "-d", os.environ['BOSH_DEPLOYMENT'],
+        "-d", deployment,
         "vms"
         ], stdout=subprocess.PIPE, stderr=sys.stderr)
 
@@ -69,7 +68,7 @@ def main():
     deployment = parse_args()
     vms = get_vms(deployment)
     for vm in vms:
-        run_command(vm)
+        run_command(deployment,vm)
 
 def parse_args():
     if len(sys.argv) != 2:
