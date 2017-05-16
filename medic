@@ -24,23 +24,15 @@ def run_command(deployment, vm):
         "-d", deployment,
         "ssh", vm,
         "-c", "curl localhost:8080/health; echo;"
-        ], stdout=subprocess.PIPE, stderr=sys.stderr)
-
+        ], stdout=subprocess.PIPE)
     bosh_cmd.wait()
-    grep_cmd = subprocess.Popen([
-        "grep",
-        "stdout",
-        ], stdin=bosh_cmd.stdout, stdout=subprocess.PIPE, stderr=sys.stderr)
+    bosh_cmd_out = bosh_cmd.stdout
 
-    grep_cmd.wait()
-    awk_cmd = subprocess.Popen([
-        "awk",
-        "{print $1 $4}",
-        ], stdin=grep_cmd.stdout, stdout=subprocess.PIPE, stderr=sys.stderr)
-
-    awk_cmd.wait()
-    for x in awk_cmd.stdout:
-        print "{}".format(x.strip())
+    for line in bosh_cmd_out:
+        if line.find("stdout") == -1:
+            continue
+        parts = line.split(" ")
+        print "{} {}".format(parts[0].strip(), parts[3].strip())
 
 def main():
     deployment = parse_args()
