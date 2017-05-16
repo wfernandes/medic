@@ -8,9 +8,10 @@ USAGE = """\
 Required environment variables:
 \tBOSH_ENVIRONMENT
 Usage:
-\tmedic <deployment_name>
+\tmedic <deployment_type>
 For Example,
 \tmedic scalablesyslog
+\tmedic loggregator
 \
 """
 
