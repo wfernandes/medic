@@ -14,10 +14,11 @@ than ssh'ing into each vm.
 ## Usage
 
 ```
-./medic <deployment_name>
+./medic <deployment_type>
 
 For example,
 ./medic scalablesyslog
+./medic loggregator
 ```
 
 ## Output
@@ -25,7 +26,7 @@ For example,
 Future versions of this will have a properly formatted output
 
 ```
-$ BOSH_ENVIRONMENT=lite ./medic scalablesyslog
+$ BOSH_ENVIRONMENT=lite BOSH_DEPLOYMENT=cf-scalablesyslog ./medic scalablesyslog
 adapter/8497540d-74cd-4fdc-98cc-e0886b5004ac: {"drainCount":1}
 adapter/8143e1cb-39e1-49c8-823c-c0d873aa9831: {"drainCount":1}
 adapter/8f699d67-687b-4a56-9bdd-1d3e23a2c080: {"drainCount":1}

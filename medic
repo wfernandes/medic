@@ -17,11 +17,11 @@ For Example,
 loggregator_vm_types=["doppler", "log-api", "reverse_log_proxy"]
 scalable_syslog_vm_types=["adapter", "scheduler"]
 
-def run_command(deployment, vm):
+def run_command(vm):
     bosh_cmd = subprocess.Popen([
         "bosh",
         "-e", os.environ['BOSH_ENVIRONMENT'],
-        "-d", deployment,
+        "-d", os.environ['BOSH_DEPLOYMENT'],
         "ssh", vm,
         "-c", "curl localhost:8080/health; echo;"
         ], stdout=subprocess.PIPE)
@@ -38,10 +38,10 @@ def main():
     deployment = parse_args()
     if deployment == "scalablesyslog":
         for vm in scalable_syslog_vm_types:
-            run_command(deployment, vm)
+            run_command(vm)
     elif deployment == "loggregator":
         for vm in loggregator_vm_types:
-            run_command(deployment, vm)
+            run_command(vm)
 
 def parse_args():
     if len(sys.argv) != 2:
