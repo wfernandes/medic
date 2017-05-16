@@ -14,7 +14,7 @@ For Example,
 \
 """
 
-loggregator_vm_types=["doppler", "traffic", "log-api", "reverse_log_proxy"]
+loggregator_vm_types=["doppler", "log-api", "reverse_log_proxy"]
 scalable_syslog_vm_types=["adapter", "scheduler"]
 
 def run_command(deployment, vm):
@@ -23,7 +23,7 @@ def run_command(deployment, vm):
         "-e", os.environ['BOSH_ENVIRONMENT'],
         "-d", deployment,
         "ssh", vm,
-        "-c", "curl localhost:8080/health; echo"
+        "-c", "curl localhost:8080/health; echo;"
         ], stdout=subprocess.PIPE, stderr=sys.stderr)
 
     bosh_cmd.wait()
@@ -35,44 +35,22 @@ def run_command(deployment, vm):
     grep_cmd.wait()
     awk_cmd = subprocess.Popen([
         "awk",
-        "{print $4}",
-        ], stdin=grep_cmd.stdout, stdout=subprocess.PIPE)
+        "{print $1 $4}",
+        ], stdin=grep_cmd.stdout, stdout=subprocess.PIPE, stderr=sys.stderr)
 
     awk_cmd.wait()
     for x in awk_cmd.stdout:
-        print "{} | {}".format(vm, x.strip())
-
-
-def get_vms(deployment):
-    bosh_cmd = subprocess.Popen([
-        "bosh",
-        "-e", os.environ['BOSH_ENVIRONMENT'],
-        "-d", deployment,
-        "vms"
-        ], stdout=subprocess.PIPE, stderr=sys.stderr)
-
-    bosh_vms = subprocess.Popen((
-        "awk",
-        '{print $1}',
-    ), stdin=bosh_cmd.stdout, stdout=subprocess.PIPE)
-
-    bosh_vms.wait()
-    vms=[]
-    if deployment == "loggregator":
-        vm_types=loggregator_vm_types
-    elif deployment == "scalablesyslog":
-        vm_types=scalable_syslog_vm_types
-
-    for vm in bosh_vms.stdout:
-        if any(vm_type in vm for vm_type in vm_types):
-            vms.append(vm.strip())
-    return vms
+        print "{}".format(x.strip())
 
 def main():
     deployment = parse_args()
     vms = get_vms(deployment)
-    for vm in vms:
-        run_command(deployment,vm)
+    if deployment == "scalablesyslog":
+        for vm in scalable_syslog_vm_types:
+            run_command(deployment, vm)
+    elif deployment == "loggregator":
+        for vm in loggregator_vm_types:
+            run_command(deployment, vm)
 
 def parse_args():
     if len(sys.argv) != 2:
