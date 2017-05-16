@@ -44,7 +44,6 @@ def run_command(deployment, vm):
 
 def main():
     deployment = parse_args()
-    vms = get_vms(deployment)
     if deployment == "scalablesyslog":
         for vm in scalable_syslog_vm_types:
             run_command(deployment, vm)
